@@ -7,6 +7,7 @@ const {
   updateSkincareHandler,
   deleteSkincareHandler,
   getAllFavoriteHandler,
+  deleteFavoriteHandler,
 } = require("../controllers/skincareController");
 const {
   addHistory,
@@ -34,7 +35,12 @@ router.put("/profile/:id", authenticateToken, updateUserHandler);
 
 router.delete("/profile/:id", authenticateToken, deleteUserHandler);
 
-router.post("/skincare", upload.single("skincare_picture"), authenticateToken, addSkincare);
+router.post(
+  "/skincare",
+  upload.single("skincare_picture"),
+  authenticateToken,
+  addSkincare
+);
 
 router.get("/skincare", authenticateToken, getAllSkincareHandler);
 
@@ -45,6 +51,8 @@ router.delete("/skincare/:id", authenticateToken, deleteSkincareHandler);
 router.post("/favorite", authenticateToken, addSkincareFavorite);
 
 router.get("/favorite/:id", authenticateToken, getAllFavoriteHandler);
+
+router.delete("/favorite", authenticateToken, deleteFavoriteHandler);
 
 router.post(
   "/history",

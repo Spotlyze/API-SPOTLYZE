@@ -7,6 +7,7 @@ const {
   updateSkincareById,
   deleteSkincareById,
   getAllFavorite,
+  deleteFavorite,
 } = require("../models/skincareModel");
 
 const { bucket } = require("../models/bucketStorage");
@@ -156,6 +157,26 @@ const addSkincareFavorite = async (req, res) => {
   }
 };
 
+const deleteFavoriteHandler = async (req, res) => {
+  try {
+    const { skincare_id, user_id } = req.body; // Ambil parameter id dari request
+
+    // Panggil fungsi untuk menghapus data di database
+    const result = await deleteFavorite(skincare_id, user_id);
+
+    // Jika data tidak ditemukan, kirim response 404
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Favorite not found" });
+    }
+
+    // Response berhasil
+    res.status(200).json({ message: "Favorite deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to delete Skincare" });
+  }
+};
+
 const getAllFavoriteHandler = async (req, res) => {
   try {
     id = req.params.id;
@@ -176,4 +197,5 @@ module.exports = {
   updateSkincareHandler,
   deleteSkincareHandler,
   getAllFavoriteHandler,
+  deleteFavoriteHandler,
 };

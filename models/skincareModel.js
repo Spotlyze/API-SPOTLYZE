@@ -13,7 +13,13 @@ const findSkincareByName = async (name) => {
   }
 };
 
-const createSkincare = async (name, ingredients, price, explanation, publicUrl) => {
+const createSkincare = async (
+  name,
+  ingredients,
+  price,
+  explanation,
+  publicUrl
+) => {
   try {
     const [result] = await db.query(
       "INSERT INTO skincare (name, ingredients, price, explanation, skincare_picture) VALUES (?, ?, ?, ?, ?)",
@@ -65,7 +71,7 @@ const deleteSkincareById = async (id) => {
 };
 
 //FAVORITE
-const findSkincareFavoriteById= async (user_id, skincare_id) => {
+const findSkincareFavoriteById = async (user_id, skincare_id) => {
   try {
     const [rows] = await db.query(
       "SELECT * FROM skincare_favorite WHERE user_id = ? AND skincare_id = ?",
@@ -92,6 +98,20 @@ const createFavorite = async (user_id, skincare_id) => {
   }
 };
 
+const deleteFavorite = async (skincare_id, user_id) => {
+  try {
+    // Buat query delete dengan parameter
+    const [result] = await db.query(
+      "DELETE FROM skincare_favorite WHERE skincare_id = ? AND user_id = ?",
+      [skincare_id, user_id]
+    );
+    return result; // Kembalikan hasil query
+  } catch (err) {
+    console.error(err);
+    throw new Error("Database query failed");
+  }
+};
+
 const getAllFavorite = async (id) => {
   try {
     const [rows] = await db.query(
@@ -114,4 +134,5 @@ module.exports = {
   updateSkincareById,
   deleteSkincareById,
   getAllFavorite,
+  deleteFavorite,
 };
