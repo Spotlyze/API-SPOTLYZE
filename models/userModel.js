@@ -2,9 +2,7 @@ const db = require("../db/database");
 
 const findUserByName = async (name) => {
   try {
-    const [rows] = await db.query("SELECT * FROM user WHERE name = ?", [
-      name,
-    ]);
+    const [rows] = await db.query("SELECT * FROM user WHERE name = ?", [name]);
     return rows[0]; // Mengembalikan user pertama (jika ada)
   } catch (err) {
     console.error(err);
@@ -12,11 +10,18 @@ const findUserByName = async (name) => {
   }
 };
 
-const createUser = async (name, email, password, address, date_of_birth) => {
+const createUser = async (
+  name,
+  email,
+  password,
+  address,
+  date_of_birth,
+  publicUrl
+) => {
   try {
     const [result] = await db.query(
-      "INSERT INTO user (name, email, password, address, date_of_birth) VALUES (?, ?, ?, ?, ?)",
-      [name, email, password, address, date_of_birth]
+      "INSERT INTO user (name, email, password, address, date_of_birth, profile_picture) VALUES (?, ?, ?, ?, ?, ?)",
+      [name, email, password, address, date_of_birth, publicUrl]
     );
     return result.insertId; // Kembalikan ID user yang baru dibuat
   } catch (err) {
@@ -27,9 +32,10 @@ const createUser = async (name, email, password, address, date_of_birth) => {
 
 const findUserById = async (user_id) => {
   try {
-    const [rows] = await db.query("SELECT name, email, address, date_of_birth FROM user WHERE user_id = ?", [
-      user_id,
-    ]);
+    const [rows] = await db.query(
+      "SELECT name, email, address, date_of_birth FROM user WHERE user_id = ?",
+      [user_id]
+    );
     return rows[0]; // Mengembalikan user pertama (jika ada)
   } catch (err) {
     console.error(err);
@@ -40,10 +46,10 @@ const findUserById = async (user_id) => {
 const updateUserById = async (id, updateData) => {
   try {
     // Buat query update dengan parameter
-    const [result] = await db.query(
-      "UPDATE user SET ? WHERE user_id = ?",
-      [updateData, id]
-    );
+    const [result] = await db.query("UPDATE user SET ? WHERE user_id = ?", [
+      updateData,
+      id,
+    ]);
     return result; // Kembalikan hasil query
   } catch (err) {
     console.error(err);
@@ -54,10 +60,7 @@ const updateUserById = async (id, updateData) => {
 const deleteUserById = async (id) => {
   try {
     // Buat query delete dengan parameter
-    const [result] = await db.query(
-      "DELETE FROM user WHERE user_id = ?",
-      [id]
-    );
+    const [result] = await db.query("DELETE FROM user WHERE user_id = ?", [id]);
     return result; // Kembalikan hasil query
   } catch (err) {
     console.error(err);
@@ -65,5 +68,10 @@ const deleteUserById = async (id) => {
   }
 };
 
-
-module.exports = { findUserByName, createUser, findUserById, updateUserById, deleteUserById };
+module.exports = {
+  findUserByName,
+  createUser,
+  findUserById,
+  updateUserById,
+  deleteUserById,
+};

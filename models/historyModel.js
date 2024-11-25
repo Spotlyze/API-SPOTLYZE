@@ -14,12 +14,12 @@ const findHistoryById = async (id) => {
   }
 };
 
-const createHistory = async (user_id, resultAnalyze, recommendation) => {
+const createHistory = async (user_id, resultAnalyze, recommendation, publicUrl) => {
   const date = new Date().toISOString().split("T")[0];
   try {
     const [result] = await db.query(
-      "INSERT INTO analyze_history (user_id, results, recommendation, date) VALUES (?, ?, ?, ?)",
-      [user_id, resultAnalyze, recommendation, date]
+      "INSERT INTO analyze_history (user_id, results, recommendation, date, history_picture) VALUES (?, ?, ?, ?, ?)",
+      [user_id, resultAnalyze, recommendation, date, publicUrl]
     );
     return result.insertId;
   } catch (err) {

@@ -13,11 +13,11 @@ const findSkincareByName = async (name) => {
   }
 };
 
-const createSkincare = async (name, ingredients, price, explanation) => {
+const createSkincare = async (name, ingredients, price, explanation, publicUrl) => {
   try {
     const [result] = await db.query(
-      "INSERT INTO skincare (name, ingredients, price, explanation) VALUES (?, ?, ?, ?)",
-      [name, ingredients, price, explanation]
+      "INSERT INTO skincare (name, ingredients, price, explanation, skincare_picture) VALUES (?, ?, ?, ?, ?)",
+      [name, ingredients, price, explanation, publicUrl]
     );
     return result.insertId; // Kembalikan ID user yang baru dibuat
   } catch (err) {

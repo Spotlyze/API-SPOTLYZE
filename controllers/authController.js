@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { jwtSecret, jwtExpiresIn } = require("../config");
-const { findUserByName, createUser, findUserById, updateUser } = require("../models/userModel");
-
+const { findUserByName, createUser } = require("../models/userModel");
+const { bucket } = require("../models/bucketStorage");
 
 // Handler untuk login
 const login = async (req, res) => {
@@ -36,12 +36,13 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   const { name, email, password, address, date_of_birth } = req.body;
 
-  console.log(req.body);
-
   if (!name || !password || !email || !address || !date_of_birth) {
-    return res
-      .status(400)
-      .json({ message: "Name, email, password, address, and date of birth are required" });
+    return res.status(400).json({
+      message: "Name, email, password, address, and date of birth are required",
+    });
+  }
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded!" });
   }
 
   try {
@@ -50,9 +51,38 @@ const register = async (req, res) => {
       return res.status(409).json({ message: "Name is already exists" });
     }
 
+    const folderName = "profile-picture"; // Tentukan folder
+    const fileName = `${folderName}/${Date.now()}-${Math.round(
+      Math.random() * 1e9
+    )}.png`;
+    const blob = bucket.file(fileName);
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+      contentType: req.file.mimetype,
+    });
+
+    blobStream.on("error", (err) => {
+      console.error("Blob stream error:", err);
+      return res
+        .status(500)
+        .json({ message: "Failed to upload file!", error: err.message });
+    });
+
+    blobStream.on("finish", () => {});
+
+    blobStream.end(req.file.buffer);
+
     const hashedPassword = bcrypt.hashSync(password, 8);
 
-    const userId = await createUser(name, email, hashedPassword, address, date_of_birth);
+    const userId = await createUser(
+      name,
+      email,
+      hashedPassword,
+      address,
+      date_of_birth,
+      publicUrl
+    );
 
     res.status(201).json({ message: "User registered successfully", userId });
   } catch (err) {
@@ -60,7 +90,5 @@ const register = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
 
 module.exports = { login, register };

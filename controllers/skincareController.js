@@ -9,10 +9,10 @@ const {
   getAllFavorite,
 } = require("../models/skincareModel");
 
+const { bucket } = require("../models/bucketStorage");
+
 const addSkincare = async (req, res) => {
   const { name, ingredients, price, explanation } = req.body;
-
-  console.log(req.body);
 
   if (!name || !ingredients || !price || !explanation) {
     return res.status(400).json({
@@ -21,17 +21,44 @@ const addSkincare = async (req, res) => {
     });
   }
 
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded!" });
+  }
+
   try {
     const existingSkincare = await findSkincareByName(name);
     if (existingSkincare) {
       return res.status(409).json({ message: "Skincare is already exists" });
     }
 
+    const folderName = "skincare-picture"; // Tentukan folder
+    const fileName = `${folderName}/${Date.now()}-${Math.round(
+      Math.random() * 1e9
+    )}.png`;
+    const blob = bucket.file(fileName);
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+      contentType: req.file.mimetype,
+    });
+
+    blobStream.on("error", (err) => {
+      console.error("Blob stream error:", err);
+      return res
+        .status(500)
+        .json({ message: "Failed to upload file!", error: err.message });
+    });
+
+    blobStream.on("finish", () => {});
+
+    blobStream.end(req.file.buffer);
+
     const skincareId = await createSkincare(
       name,
       ingredients,
       price,
-      explanation
+      explanation,
+      publicUrl
     );
 
     res
