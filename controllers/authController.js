@@ -20,14 +20,17 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.user_id, username: user.username },
       jwtSecret,
       {
         expiresIn: jwtExpiresIn,
       }
     );
 
-    res.json({ token });
+    const user_id = user.user_id;
+    const user_name = user.name;
+
+    res.json({ token, user_id, user_name });
   } catch (err) {
     res.status(500).json({ message: "Internal server error" });
   }
