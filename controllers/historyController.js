@@ -5,13 +5,16 @@ const {
 } = require("../models/historyModel");
 
 const { bucket } = require("../models/bucketStorage");
+const formData = require('form-data');
+const axios = require('axios');
 
 const addHistory = async (req, res) => {
-  const { user_id, result, recommendation } = req.body;
+  // Validasi input
+  const { user_id, recommendation } = req.body;
 
-  if (!user_id || !result || !recommendation) {
+  if (!user_id || !recommendation) {
     return res.status(400).json({
-      message: "User_id, resultAnalyze, and recommendation are required",
+      message: "User_id and recommendation are required",
     });
   }
 
@@ -20,10 +23,25 @@ const addHistory = async (req, res) => {
   }
 
   try {
-    const folderName = "history-picture"; // Tentukan folder
+    const form = new formData();
+    form.append("image", req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+
+    // Mengirim permintaan POST ke API Flask
+    const result = await axios.post("http://localhost:5000/predict", form, {
+      headers: {
+        ...form.getHeaders(),
+      },
+    });
+
+    // Generate file name and upload to bucket
+    const folderName = "history-picture";
     const fileName = `${folderName}/${Date.now()}-${Math.round(
       Math.random() * 1e9
     )}.png`;
+
     const blob = bucket.file(fileName);
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
     const blobStream = blob.createWriteStream({
@@ -38,21 +56,33 @@ const addHistory = async (req, res) => {
         .json({ message: "Failed to upload file!", error: err.message });
     });
 
-    blobStream.on("finish", () => {});
+    blobStream.on("finish", async () => {
+      // Create history record after successful file upload
+      try {
+        const historyId = await createHistory(
+          user_id,
+          result.data.predicted_class,
+          recommendation,
+          publicUrl
+        );
+        res
+          .status(201)
+          .json({ message: "History added successfully", historyId });
+      } catch (dbError) {
+        console.error("Error creating history record:", dbError);
+        res.status(500).json({
+          message: "Failed to create history record",
+          error: dbError.message,
+        });
+      }
+    });
 
     blobStream.end(req.file.buffer);
-
-    const historyId = await createHistory(
-      user_id,
-      result,
-      recommendation,
-      publicUrl
-    );
-
-    res.status(201).json({ message: "History added successfully", historyId });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error during prediction or upload:", err);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: err.message });
   }
 };
 

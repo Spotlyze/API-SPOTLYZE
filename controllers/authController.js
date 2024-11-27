@@ -59,7 +59,7 @@ const register = async (req, res) => {
       Math.random() * 1e9
     )}.png`;
     const blob = bucket.file(fileName);
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+    const publicUrl = ``;
     const blobStream = blob.createWriteStream({
       resumable: false,
       contentType: req.file.mimetype,
@@ -72,7 +72,9 @@ const register = async (req, res) => {
         .json({ message: "Failed to upload file!", error: err.message });
     });
 
-    blobStream.on("finish", () => {});
+    blobStream.on("finish", () => {
+      publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+    });
 
     blobStream.end(req.file.buffer);
 
