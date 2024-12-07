@@ -8,17 +8,18 @@ const {
   deleteSkincareById,
   getAllFavorite,
   deleteFavorite,
+  findSkincareById,
 } = require("../models/skincareModel");
 
 const { bucket } = require("../models/bucketStorage");
 
 const addSkincare = async (req, res) => {
-  const { name, ingredients, price, explanation } = req.body;
+  const { name, ingredients, price, explanation, type } = req.body;
 
-  if (!name || !ingredients || !price || !explanation) {
+  if (!name || !ingredients || !price || !explanation || !type) {
     return res.status(400).json({
       message:
-        "Name, ingredients, price, and explaination about the product are required",
+        "Name, ingredients, price, type and explaination about the product are required",
     });
   }
 
@@ -57,6 +58,7 @@ const addSkincare = async (req, res) => {
     const skincareId = await createSkincare(
       name,
       ingredients,
+      type,
       price,
       explanation,
       publicUrl
@@ -77,6 +79,19 @@ const getAllSkincareHandler = async (req, res) => {
     res.status(200).json(skincares);
   } catch (err) {
     res.status(500).json({ message: "Failed to retrieve skincare" });
+  }
+};
+
+const getSkincareHandler= async (req, res) => {
+  try {
+    id = req.params.id;
+    const skincare = await findSkincareById(id);
+    if (!skincare) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(skincare);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to retrieve users" });
   }
 };
 
@@ -198,4 +213,5 @@ module.exports = {
   deleteSkincareHandler,
   getAllFavoriteHandler,
   deleteFavoriteHandler,
+  getSkincareHandler,
 };

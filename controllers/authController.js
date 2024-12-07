@@ -45,7 +45,29 @@ const register = async (req, res) => {
     });
   }
   if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded!" });
+    try {
+      const existingUser = await findUserByName(name);
+      if (existingUser) {
+        return res.status(409).json({ message: "Name is already exists" });
+      }
+      const publicUrl = "https://storage.googleapis.com/spotlyze-storage/profile-picture/default.png";
+
+      const hashedPassword = bcrypt.hashSync(password, 8);
+
+      const userId = await createUser(
+        name,
+        email,
+        hashedPassword,
+        address,
+        date_of_birth,
+        publicUrl
+      );
+
+      res.status(201).json({ message: "User registered successfully", userId });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 
   try {

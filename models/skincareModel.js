@@ -13,17 +13,32 @@ const findSkincareByName = async (name) => {
   }
 };
 
+const findSkincareById = async (id) => {
+  try {
+    console.log(id);
+    const [rows] = await db.query(
+      "SELECT * FROM skincare WHERE skincare_id = ?",
+      [id]
+    );
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw new Error("Database query failed");
+  }
+};
+
 const createSkincare = async (
   name,
   ingredients,
+  type,
   price,
   explanation,
   publicUrl
 ) => {
   try {
     const [result] = await db.query(
-      "INSERT INTO skincare (name, ingredients, price, explanation, skincare_picture) VALUES (?, ?, ?, ?, ?)",
-      [name, ingredients, price, explanation, publicUrl]
+      "INSERT INTO skincare (name, ingredients, type, price, explanation, skincare_picture) VALUES (?, ?, ?,  ?, ?, ?)",
+      [name, ingredients, type, price, explanation, publicUrl]
     );
     return result.insertId; // Kembalikan ID user yang baru dibuat
   } catch (err) {
@@ -135,4 +150,5 @@ module.exports = {
   deleteSkincareById,
   getAllFavorite,
   deleteFavorite,
+  findSkincareById,
 };
