@@ -33,7 +33,7 @@ const createUser = async (
 const findUserById = async (user_id) => {
   try {
     const [rows] = await db.query(
-      "SELECT name, email, address, date_of_birth FROM, profile_picture user WHERE user_id = ?",
+      "SELECT name, email, address, date_of_birth, profile_picture FROM user WHERE user_id = ?",
       [user_id]
     );
     return rows[0]; // Mengembalikan user pertama (jika ada)
@@ -42,6 +42,8 @@ const findUserById = async (user_id) => {
     throw new Error("Database query failed");
   }
 };
+
+
 
 const updateUserById = async (id, updateData) => {
   try {

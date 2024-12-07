@@ -1,4 +1,5 @@
 const {
+  findHistoryByUser,
   findHistoryById,
   createHistory,
   getAllHistory,
@@ -7,6 +8,7 @@ const {
 const { bucket } = require("../models/bucketStorage");
 const formData = require('form-data');
 const axios = require('axios');
+const { findUserById } = require("../models/userModel");
 
 const addHistory = async (req, res) => {
   // Validasi input
@@ -95,7 +97,17 @@ const getAllHistoryHandler = async (req, res) => {
   }
 };
 
-const getByID = async (req, res) => {
+const getByUser = async (req, res) => {
+  try {
+    id = req.params.id;
+    const history = await findHistoryByUser(id);
+    res.status(200).json(history);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to retrieve users" });
+  }
+};
+
+const getByid = async (req, res) => {
   try {
     id = req.params.id;
     const history = await findHistoryById(id);
@@ -105,4 +117,4 @@ const getByID = async (req, res) => {
   }
 };
 
-module.exports = { getAllHistoryHandler, addHistory, getByID };
+module.exports = { getAllHistoryHandler, addHistory, getByUser, getByid };

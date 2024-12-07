@@ -12,7 +12,8 @@ const {
 const {
   addHistory,
   getAllHistoryHandler,
-  getByID,
+  getByUser,
+  getByid,
 } = require("../controllers/historyController");
 const {
   getProfile,
@@ -63,6 +64,8 @@ router.post(
 
 router.get("/history", authenticateToken, getAllHistoryHandler);
 
-router.get("/history/:id", authenticateToken, getByID);
+router.get("/history/user/:id", authenticateToken, getByUser);
+
+router.get("/history/:id", authenticateToken, getByid);
 
 module.exports = router;
