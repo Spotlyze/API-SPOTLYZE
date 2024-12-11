@@ -29,16 +29,35 @@ const findSkincareById = async (id) => {
 
 const createSkincare = async (
   name,
+  brand,
+  category,
+  subcategory,
+  is_recommend,
+  description_processed,
+  concern,
   ingredients,
-  type,
+  skin_type,
   price,
-  explanation,
+  star_rating,
   publicUrl
 ) => {
   try {
     const [result] = await db.query(
-      "INSERT INTO skincare (name, ingredients, type, price, explanation, skincare_picture) VALUES (?, ?, ?,  ?, ?, ?)",
-      [name, ingredients, type, price, explanation, publicUrl]
+      "INSERT INTO skincare (name, brand, category, subcategory, is_recommend, description_processed, concern, ingredients, skin_type, price, star_rating, skincare_picture) VALUES (?, ?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        name,
+        brand,
+        category,
+        subcategory,
+        is_recommend,
+        description_processed,
+        concern,
+        ingredients,
+        skin_type,
+        price,
+        star_rating,
+        publicUrl,
+      ]
     );
     return result.insertId; // Kembalikan ID user yang baru dibuat
   } catch (err) {

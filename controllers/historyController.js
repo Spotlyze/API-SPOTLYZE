@@ -5,18 +5,20 @@ const {
   getAllHistory,
 } = require("../models/historyModel");
 
+const { findSkincareByName } = require("../models/skincareModel");
+
 const { bucket } = require("../models/bucketStorage");
-const formData = require('form-data');
-const axios = require('axios');
-const { findUserById } = require("../models/userModel");
+const formData = require("form-data");
+const axios = require("axios");
 
 const addHistory = async (req, res) => {
   // Validasi input
-  const { user_id, recommendation } = req.body;
+  const { user_id, skin_type, skin_sensitivity, concerns } = req.body;
 
-  if (!user_id || !recommendation) {
+  if (!user_id || !skin_type || !skin_sensitivity || !concerns) {
     return res.status(400).json({
-      message: "User_id and recommendation are required",
+      message:
+        "User_id, skin_type, skin_sensitivity, and concerns are required",
     });
   }
 
@@ -37,6 +39,53 @@ const addHistory = async (req, res) => {
         ...form.getHeaders(),
       },
     });
+
+    const skinData = {
+      skin_type,
+      skin_sensitivity,
+      concerns,
+    };
+
+    const productResponse = await axios.post(
+      "http://localhost:3000",
+      skinData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    // const productsByCategory = productResponse.data;
+    // const allProductNames = [];
+    // Object.values(productsByCategory).forEach((products) => {
+    //   products.forEach(async (product) => {
+    //     let idSkincare = await findSkincareByName(product.product_name);
+    //     allProductNames.push(idSkincare[0]?.skincare_id);
+    //   });
+    // });
+
+    const allProductNames = await Promise.all(
+      Object.values(productsByCategory).flatMap((products) =>
+        products.map(async (product) => {
+          try {
+            const idSkincare = await findSkincareByName(product.product_name);
+            console.log("ID Skincare:", idSkincare);
+            return idSkincare[0].skincare_id; // Ambil skincare_id jika ditemukan
+          } catch (error) {
+            console.error("Error finding skincare:", error.message);
+            return null; // Pastikan untuk mengembalikan nilai default jika terjadi kesalahan
+          }
+        })
+      )
+    );
+
+    // Filter undefined atau null
+    const validProductIds = allProductNames.filter(
+      (id) => id !== null && id !== undefined
+    );
+
+    console.log("All Product Names:", validProductIds);
+
+    console.log("All Product Names:", allProductNames);
 
     // Generate file name and upload to bucket
     const folderName = "history-picture";
@@ -64,7 +113,7 @@ const addHistory = async (req, res) => {
         const historyId = await createHistory(
           user_id,
           result.data.predicted_class,
-          recommendation,
+          allProductNames.join(", "),
           publicUrl
         );
         res

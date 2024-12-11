@@ -14,12 +14,35 @@ const {
 const { bucket } = require("../models/bucketStorage");
 
 const addSkincare = async (req, res) => {
-  const { name, ingredients, price, explanation, type } = req.body;
+  const {
+    name,
+    brand,
+    category,
+    subcategory,
+    is_recommend,
+    description_processed,
+    concern,
+    ingredients,
+    skin_type,
+    price,
+    star_rating,
+  } = req.body;
 
-  if (!name || !ingredients || !price || !explanation || !type) {
+  if (
+    !name ||
+    !brand ||
+    !category ||
+    !subcategory ||
+    !is_recommend ||
+    !description_processed ||
+    !concern ||
+    !ingredients ||
+    !skin_type ||
+    !price ||
+    !star_rating
+  ) {
     return res.status(400).json({
-      message:
-        "Name, ingredients, price, type and explaination about the product are required",
+      message: "Data are missing",
     });
   }
 
@@ -57,10 +80,16 @@ const addSkincare = async (req, res) => {
 
     const skincareId = await createSkincare(
       name,
+      brand,
+      category,
+      subcategory,
+      is_recommend,
+      description_processed,
+      concern,
       ingredients,
-      type,
+      skin_type,
       price,
-      explanation,
+      star_rating,
       publicUrl
     );
 
@@ -82,7 +111,7 @@ const getAllSkincareHandler = async (req, res) => {
   }
 };
 
-const getSkincareHandler= async (req, res) => {
+const getSkincareHandler = async (req, res) => {
   try {
     id = req.params.id;
     const skincare = await findSkincareById(id);
